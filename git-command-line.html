@@ -137,7 +137,7 @@
 <h2>The Basics: Getting Started</h2>
 <h3 id="cloning-an-existing-repository">1. Cloning an Existing Repository</h3>
 <p>To get a copy of a remote repository from GitHub, use <code>git clone</code>.</p>
-<pre><code>git clone [https://github.com/username/my-project.git](https://github.com/username/my-project.git)  </code></pre>
+<pre><code>git clone [https://github.com/e-perl-NOAA/git-command-line.git](https://github.com/e-perl-NOAA/git-command-line.git)  </code></pre>
 </section>
 <section id="the-basics-getting-started-1" class="slide level2">
 <h2>The Basics: Getting Started</h2>
@@ -171,43 +171,88 @@
 <section id="dealing-with-a-merge-conflict" class="slide level2">
 <h2>Dealing with a Merge Conflict</h2>
 <h3 id="scenario">Scenario</h3>
-<p>Jon and I are working on a report. Jon makes a change on his branch and pushes it. I am working at the same time on the <code>main</code> branch and edit the <strong>same line</strong> of code and pushe my change first.</p>
+<p>Jon and I are working on a report. Jon makes a change on <code>main</code> and pushes it. I am working at the same time on a branch called <code>ep-changes</code> and edit the <strong>same line</strong> of code and push my change.</p>
 <h3 id="the-conflict">The Conflict</h3>
 <p>When I try to merge my changes into <code>main</code> (either locally or through a pull request), Git will pause and report a <strong>merge conflict</strong>.</p>
-<pre><code># My terminal git checkout main git pull origin main # Pull the latest from
-git merge andre-updates  </code></pre>
+<pre><code># My terminal 
+git checkout main 
+git pull origin main # Pull the latest from Jon
+git merge ep-changes </code></pre>
 <p><strong>Expected output:</strong></p>
-<pre><code>Auto-merging report.txt CONFLICT (content): Merge conflict in report.txt Automatic merge failed; fix conflicts and then commit the result.  </code></pre>
+<pre><code>Auto-merging README.md 
+CONFLICT (content): Merge conflict in README.md  
+Automatic merge failed; fix conflicts and then commit the result.  </code></pre>
 <h3 id="resolving-the-conflict">Resolving the Conflict</h3>
-<p>The conflicting file (<code>report.txt</code>) will contain special markers. You must manually edit the file to resolve the issue.</p>
-<pre><code># In the conflicting file... # &lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD # ### Section 2: Data Sources # Tony's change # ======= # ### Section 2: Methodology # Andre's change # &gt;&gt;&gt;&gt;&gt;&gt;&gt; andre-updates  # Edit the file to the desired state, for example: # ### Section 2: Methodology and Data Sources  # Then, stage and commit the resolved file git add report.txt git commit -m "Resolved merge conflict and integrated new sections"  </code></pre>
+<p>The conflicting file (<code>README.md</code>) will contain special markers. You must manually edit the file to resolve the issue.</p>
+<pre><code># In the conflicting file... 
+&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD
+# git-command-line PRESENTATION
+=======
+# git-command-line presentation
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; ep-changes
+# Edit the file to the desired state, for example: 
+# git-command-line presentation 
+# Then, stage and commit the resolved file 
+git add README.md
+git commit -m "Resolved merge conflict"  </code></pre>
 </section>
 <section id="rewriting-history-amend-rebase" class="slide level2">
 <h2>Rewriting History: <code>amend</code> &amp; <code>rebase</code></h2>
 <h3 id="git-commit---amend"><code>git commit --amend</code></h3>
-<p>Use this to modify your <strong>last commit</strong>. It’s useful for fixing typos in a commit message or adding a forgotten file.</p>
-<p><strong>Caution:</strong> Do <strong>not</strong> amend commits that have already been pushed to a shared branch.</p>
-<pre><code># Made a commit with a typo in the message git commit -m "Added final concluions text"  # Now, let's fix it git add . git commit --amend -m "Added final conclusions text"  </code></pre>
+<p>Use this to modify your <strong>last commit</strong>. It’s useful for fixing typos in a commit message, adding a forgotten file, or making a small fix.</p>
+<p><strong>Caution:</strong> You generally do <strong>not</strong> amend commits that have already been pushed to a shared branch. This is because it rewrites the git history, which can confuse collaborators. However, if you do end up doing this, you’ll need to force push with <code>git push --force</code>. After that, your collaborators will need to sync their local copies with the updated history otherwise they will run into issues. To resolve those issues they will need to run <code>git fetch</code> followed by <code>git reset --hard origin/main</code> (or the appropriate branch name) or <code>git pull --rebase</code>.</p>
+<h4 id="changing-a-commit-message">Changing a commit message</h4>
+<pre><code># Made a commit with a typo in the message 
+git commit -m "Added more text to README.md flie"  
+# Now, let's fix it 
+git add . 
+git commit --amend -m "Added more text to README.md file"  </code></pre>
 <p>This replaces the last commit with a new one, so the old commit history is gone.</p>
+<h4 id="adding-a-forgotten-file">Adding a forgotten file</h4>
+<pre><code># Create a new file or make a change
+touch forgotten_file.txt
+
+# Instead of making a new "oops, forgot a file" commit, you amend the previous one
+git add forgotten_file.txt
+git commit --amend --no-edit # This will add the file without changing the commit message</code></pre>
+<h4 id="fixing-a-small-bug">Fixing a small bug</h4>
+<pre><code># Made a commit with some new code
+git commit -m "Implemented user login logic"
+
+# Now you find a bug and fix it
+# ... edit the code ...
+
+# Stage the fix and amend the previous commit
+git add .
+git commit --amend -m "Implemented user login logic" # This updates the commit with the fix</code></pre>
 </section>
 <section id="interactive-rebasing-the-ultimate-cleanup" class="slide level2">
 <h2>Interactive Rebasing: The Ultimate Cleanup</h2>
 <h3 id="what-is-interactive-rebasing">What is Interactive Rebasing?</h3>
 <p><code>git rebase -i</code> lets you rewrite a series of commits in your branch history. It’s an essential tool for creating a clean, easy-to-read commit history before merging.</p>
 <h3 id="example-squashing-commits">Example: Squashing Commits</h3>
-<p>Let’s say Andre has been working on a feature and has a series of small “fix” commits he wants to combine into a single, clean commit.</p>
-<pre><code># View the last 3 commits on the current branch git log --oneline -3  # Rebase the last 3 commits interactively git rebase -i HEAD~3  </code></pre>
+<p>Let’s say that I have been working on a feature and has a series of small “fix” commits I wants to combine into a single, clean commit.</p>
+<pre><code># View the last 3 commits on the current branch 
+git log --oneline -3  
+# Rebase the last 3 commits interactively 
+git rebase -i HEAD~3  </code></pre>
 <p>Git will open your text editor.</p>
 <p><strong>Original editor content:</strong></p>
-<pre><code>pick 691e84a Added a new file for the feature pick 5c4456b Fix a typo pick f83f739 Forgot to add a comment  </code></pre>
+<pre><code>pick 691e84a Added a new file for the feature 
+pick 5c4456b Fix a typo 
+pick f83f739 Forgot to add a comment  </code></pre>
 <p>To squash the last two commits into the first one, you would edit the file.</p>
 <ul>
 <li><p><code>squash</code> (<code>s</code>): Combines a commit into the previous one and prompts for a new commit message.</p></li>
 <li><p><code>fixup</code> (<code>f</code>): Combines a commit into the previous one and <strong>discards</strong> its commit message.</p></li>
 </ul>
 <p><strong>Edited editor content:</strong></p>
-<pre><code>pick 691e84a Added a new file for the feature squash 5c4456b Fix a typo fixup f83f739 Forgot to add a comment  </code></pre>
+<pre><code>pick 691e84a Added a new file for the feature 
+squash 5c4456b Fix a typo 
+fixup f83f739 Forgot to add a comment  </code></pre>
 <p>Save and close the editor. Git will then prompt you to write a single, clean commit message for the combined commits. The result is a single, clean commit in your history.</p>
+<h3 id="vs-code">VS Code</h3>
+<p>There is a much easier way to do this using VS Code by doing the following: 1. Install the GitLens extension 2. <code>CTL + SHIFT + P</code> and search “GitLens: Enable Interactive Rebase Editor” 3. Close out VS Code and reopen 4. <code>git rebase -i</code> should open the interactive rebase editor. 5. Generally <code>use git push -f</code> after doing this</p>
 </section>
 <section id="final-takeaways" class="slide level2">
 <h2>Final Takeaways</h2>
@@ -218,11 +263,6 @@ git merge andre-updates  </code></pre>
 <li><p><strong>Don’t Rebase Shared Branches:</strong> <code>rebase</code> is a powerful tool for cleaning your <strong>local</strong> history, but never use it on a branch that has been shared with collaborators.</p></li>
 <li><p><strong>When in Doubt, Ask!</strong> There’s a rich community and great documentation available.</p></li>
 </ul>
-<div class="cell">
-<div class="cell-output cell-output-stdout">
-<pre><code>[1] 2</code></pre>
-</div>
-</div>
 
 </section>
     </div>
@@ -440,82 +480,6 @@ git merge andre-updates  </code></pre>
         ]
       });
     </script>
-    
-
-    <script>
-
-      // htmlwidgets need to know to resize themselves when slides are shown/hidden.
-
-      // Fire the "slideenter" event (handled by htmlwidgets.js) when the current
-
-      // slide changes (different for each slide format).
-
-      (function () {
-
-        // dispatch for htmlwidgets
-
-        function fireSlideEnter() {
-
-          const event = window.document.createEvent("Event");
-
-          event.initEvent("slideenter", true, true);
-
-          window.document.dispatchEvent(event);
-
-        }
-
-    
-
-        function fireSlideChanged(previousSlide, currentSlide) {
-
-          fireSlideEnter();
-
-    
-
-          // dispatch for shiny
-
-          if (window.jQuery) {
-
-            if (previousSlide) {
-
-              window.jQuery(previousSlide).trigger("hidden");
-
-            }
-
-            if (currentSlide) {
-
-              window.jQuery(currentSlide).trigger("shown");
-
-            }
-
-          }
-
-        }
-
-    
-
-        // hookup for slidy
-
-        if (window.w3c_slidy) {
-
-          window.w3c_slidy.add_observer(function (slide_num) {
-
-            // slide_num starts at position 1
-
-            fireSlideChanged(null, w3c_slidy.slides[slide_num - 1]);
-
-          });
-
-        }
-
-    
-
-      })();
-
-    </script>
-
-    
-
     <script id="quarto-html-after-body" type="application/javascript">
     window.document.addEventListener("DOMContentLoaded", function (event) {
       const toggleBodyColorMode = (bsSheetEl) => {

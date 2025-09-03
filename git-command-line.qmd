@@ -78,46 +78,72 @@ git merge ep-changes
 **Expected output:**
 
 ```         
-Auto-merging report.txt 
-CONFLICT (content): Merge conflict in report.txt 
+Auto-merging README.md 
+CONFLICT (content): Merge conflict in README.md  
 Automatic merge failed; fix conflicts and then commit the result.  
 ```
 
 ### Resolving the Conflict
 
-The conflicting file (`report.txt`) will contain special markers. You must manually edit the file to resolve the issue.
+The conflicting file (`README.md`) will contain special markers. You must manually edit the file to resolve the issue.
 
 ```         
 # In the conflicting file... 
-# <<<<<<< HEAD 
-# ### Section 2: Data Sources 
-# Tony's change # ======= 
-# ### Section 2: Methodology 
-# Andre's change # >>>>>>> andre-updates 
+<<<<<<< HEAD
+# git-command-line PRESENTATION
+=======
+# git-command-line presentation
+>>>>>>> ep-changes
 # Edit the file to the desired state, for example: 
-# ### Section 2: Methodology and Data Sources  
+# git-command-line presentation 
 # Then, stage and commit the resolved file 
-git add report.txt 
-git commit -m "Resolved merge conflict and integrated new sections"  
+git add README.md
+git commit -m "Resolved merge conflict"  
 ```
 
 ## Rewriting History: `amend` & `rebase`
 
 ### `git commit --amend`
 
-Use this to modify your **last commit**. It's useful for fixing typos in a commit message or adding a forgotten file.
+Use this to modify your **last commit**. It's useful for fixing typos in a commit message, adding a forgotten file, or making a small fix.
 
-**Caution:** Do **not** amend commits that have already been pushed to a shared branch.
+**Caution:** You generally do **not** amend commits that have already been pushed to a shared branch. This is because it rewrites the git history, which can confuse collaborators. 
+However, if you do end up doing this, you'll need to force push with `git push --force`. After that, your collaborators will need to sync their local copies with the updated history otherwise they will run into issues. To resolve those issues they will need to run `git fetch` followed by `git reset --hard origin/main` (or the appropriate branch name) or `git pull --rebase`.
 
+#### Changing a commit message
 ```         
 # Made a commit with a typo in the message 
-git commit -m "Added final concluions text"  
+git commit -m "Added more text to README.md flie"  
 # Now, let's fix it 
 git add . 
-git commit --amend -m "Added final conclusions text"  
+git commit --amend -m "Added more text to README.md file"  
+```
+This replaces the last commit with a new one, so the old commit history is gone.
+
+#### Adding a forgotten file
+
+```
+# Create a new file or make a change
+touch forgotten_file.txt
+
+# Instead of making a new "oops, forgot a file" commit, you amend the previous one
+git add forgotten_file.txt
+git commit --amend --no-edit # This will add the file without changing the commit message
 ```
 
-This replaces the last commit with a new one, so the old commit history is gone.
+#### Fixing a small bug
+
+```
+# Made a commit with some new code
+git commit -m "Implemented user login logic"
+
+# Now you find a bug and fix it
+# ... edit the code ...
+
+# Stage the fix and amend the previous commit
+git add .
+git commit --amend -m "Implemented user login logic" # This updates the commit with the fix
+```
 
 ## Interactive Rebasing: The Ultimate Cleanup
 
@@ -127,7 +153,7 @@ This replaces the last commit with a new one, so the old commit history is gone.
 
 ### Example: Squashing Commits
 
-Let's say Andre has been working on a feature and has a series of small "fix" commits he wants to combine into a single, clean commit.
+Let's say that I have been working on a feature and has a series of small "fix" commits I wants to combine into a single, clean commit.
 
 ```         
 # View the last 3 commits on the current branch 
@@ -161,6 +187,16 @@ fixup f83f739 Forgot to add a comment
 ```
 
 Save and close the editor. Git will then prompt you to write a single, clean commit message for the combined commits. The result is a single, clean commit in your history.
+
+### VS Code
+
+There is a much easier way to do this using VS Code by doing the following:
+1. Install the GitLens extension
+2. `CTL + SHIFT + P` and search "GitLens: Enable Interactive Rebase Editor"
+3. Close out VS Code and reopen
+4. `git rebase -i` should open the interactive rebase editor.
+5. Generally `use git push -f` after doing this
+
 
 ## Final Takeaways
 
