@@ -1,0 +1,175 @@
+---
+title: "Git & GitHub for the Command Line"
+format:
+  revealjs:
+    theme: simple
+    slide-number: true
+    css: styles.css 
+    preview-links: true
+    editor: visual
+---
+
+## The Basics: Getting Started
+
+### 1. Cloning an Existing Repository
+
+To get a copy of a remote repository from GitHub, use `git clone`.
+
+```         
+git clone [https://github.com/e-perl-NOAA/git-command-line.git](https://github.com/e-perl-NOAA/git-command-line.git)  
+```
+
+## The Basics: Getting Started
+
+### 2. Staging and Committing
+
+This is the **core loop** of Git.
+
+-   `git status`: See which files have changed.
+
+-   `git add <file>`: Stage changes for a file.
+
+-   `git add .`: Stage all changes.
+
+-   `git commit -m "Your commit message"`: Save the staged changes to your local history.
+
+## The Basics: Getting Started
+### 3. Pushing to GitHub
+
+To share your local commits with the remote repository, use `git push`. `origin` is the default name for your remote, and `main` is the branch.
+
+```         
+git push origin main  
+```
+
+## Branching & Merging
+
+### Why Use Branches?
+
+Branches allow you to work on new features or bug fixes in **isolation** from the `main` branch, which keeps the main project stable.
+
+### Basic Branch Commands
+
+-   `git branch <branch-name>`: Create a new branch.
+
+-   `git checkout <branch-name>`: Switch to an existing branch. (or `git switch` in newer Git)
+
+-   `git checkout -b <branch-name>`: Create and switch in one step.
+
+-   `git merge <branch-name>`: Merge changes from a specified branch into your current branch.
+
+## Dealing with a Merge Conflict
+
+### Scenario
+
+Jon and I are working on a report. Jon makes a change on `main` and pushes it. I am working at the same time on a branch called `ep-changes` and edit the **same line** of code and push my change.
+
+### The Conflict
+
+When I try to merge my changes into `main` (either locally or through a pull request), Git will pause and report a **merge conflict**.
+
+```         
+# My terminal 
+git checkout main 
+git pull origin main # Pull the latest from Jon
+git merge ep-changes 
+```
+
+**Expected output:**
+
+```         
+Auto-merging report.txt 
+CONFLICT (content): Merge conflict in report.txt 
+Automatic merge failed; fix conflicts and then commit the result.  
+```
+
+### Resolving the Conflict
+
+The conflicting file (`report.txt`) will contain special markers. You must manually edit the file to resolve the issue.
+
+```         
+# In the conflicting file... 
+# <<<<<<< HEAD 
+# ### Section 2: Data Sources 
+# Tony's change # ======= 
+# ### Section 2: Methodology 
+# Andre's change # >>>>>>> andre-updates 
+# Edit the file to the desired state, for example: 
+# ### Section 2: Methodology and Data Sources  
+# Then, stage and commit the resolved file 
+git add report.txt 
+git commit -m "Resolved merge conflict and integrated new sections"  
+```
+
+## Rewriting History: `amend` & `rebase`
+
+### `git commit --amend`
+
+Use this to modify your **last commit**. It's useful for fixing typos in a commit message or adding a forgotten file.
+
+**Caution:** Do **not** amend commits that have already been pushed to a shared branch.
+
+```         
+# Made a commit with a typo in the message 
+git commit -m "Added final concluions text"  
+# Now, let's fix it 
+git add . 
+git commit --amend -m "Added final conclusions text"  
+```
+
+This replaces the last commit with a new one, so the old commit history is gone.
+
+## Interactive Rebasing: The Ultimate Cleanup
+
+### What is Interactive Rebasing?
+
+`git rebase -i` lets you rewrite a series of commits in your branch history. It's an essential tool for creating a clean, easy-to-read commit history before merging.
+
+### Example: Squashing Commits
+
+Let's say Andre has been working on a feature and has a series of small "fix" commits he wants to combine into a single, clean commit.
+
+```         
+# View the last 3 commits on the current branch 
+git log --oneline -3  
+# Rebase the last 3 commits interactively 
+git rebase -i HEAD~3  
+```
+
+Git will open your text editor.
+
+**Original editor content:**
+
+```         
+pick 691e84a Added a new file for the feature 
+pick 5c4456b Fix a typo 
+pick f83f739 Forgot to add a comment  
+```
+
+To squash the last two commits into the first one, you would edit the file.
+
+-   `squash` (`s`): Combines a commit into the previous one and prompts for a new commit message.
+
+-   `fixup` (`f`): Combines a commit into the previous one and **discards** its commit message.
+
+**Edited editor content:**
+
+```         
+pick 691e84a Added a new file for the feature 
+squash 5c4456b Fix a typo 
+fixup f83f739 Forgot to add a comment  
+```
+
+Save and close the editor. Git will then prompt you to write a single, clean commit message for the combined commits. The result is a single, clean commit in your history.
+
+## Final Takeaways
+
+-   **Commit Often:** Save your work frequently with descriptive messages.
+
+-   **Use Branches:** Create a new branch for each feature or bug fix.
+
+-   **Pull First:** Always run `git pull` before starting work to get the latest changes.
+
+-   **Don't Rebase Shared Branches:** `rebase` is a powerful tool for cleaning your **local** history, but never use it on a branch that has been shared with collaborators.
+
+-   **When in Doubt, Ask!** There's a rich community and great documentation available.
